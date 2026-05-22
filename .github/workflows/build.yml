@@ -1,0 +1,97 @@
+name: Build & Package
+
+on:
+  push:
+    branches: [feature/ci-multi-platform-packaging]
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  QT_VERSION: 5.15.2
+  APP_VERSION: 1.26.0
+
+jobs:
+  ubuntu:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: ${{ env.QT_VERSION }}
+          host: linux
+          target: desktop
+          arch: gcc_64
+
+      - name: Install build deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential libuchardet-dev \
+            libgl1-mesa-dev libxkbcommon-x11-0 fuse libfuse2
+
+      - name: Build QScintilla static lib
+        run: |
+          cd src/qscint/src
+          qmake qscintilla.pro
+          make -j$(nproc)
+          mkdir -p ../../x64/Release
+          cp libqmyedit_qt5.a ../../x64/Release/
+
+      - name: Build CCompare
+        run: |
+          cd src
+          cp mac/LINUXRealCompare.pro ./LINUXRealCompare.pro
+          qmake LINUXRealCompare.pro
+          make -j$(nproc)
+          ls -la x64/Release/
+
+      - name: Stage app tree
+        run: |
+          STAGE="$GITHUB_WORKSPACE/stage"
+          mkdir -p "$STAGE/usr/bin" \
+                   "$STAGE/usr/share/applications" \
+                   "$STAGE/usr/share/icons/hicolor/256x256/apps"
+          cp src/x64/Release/CCompare "$STAGE/usr/bin/"
+          cp packaging/cc-compare.desktop "$STAGE/usr/share/applications/"
+          cp packaging/cc-compare.png \
+             "$STAGE/usr/share/icons/hicolor/256x256/apps/cc-compare.png"
+
+      - name: Build .deb
+        run: |
+          STAGE="$GITHUB_WORKSPACE/stage"
+          mkdir -p "$STAGE/DEBIAN"
+          cat > "$STAGE/DEBIAN/control" <<EOF
+          Package: cc-compare
+          Version: ${{ env.APP_VERSION }}
+          Section: devel
+          Priority: optional
+          Architecture: amd64
+          Maintainer: cc-compare CI <ci@example.com>
+          Description: A free code comparison tool
+          EOF
+          dpkg-deb --build "$STAGE" "CCompare-ubuntu.deb"
+
+      - name: Build AppImage
+        run: |
+          wget -q https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+          wget -q https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage
+          chmod +x linuxdeploy*.AppImage
+          ./linuxdeploy-x86_64.AppImage \
+            --appdir AppDir \
+            --executable src/x64/Release/CCompare \
+            --desktop-file packaging/cc-compare.desktop \
+            --icon-file packaging/cc-compare.png \
+            --plugin qt \
+            --output appimage
+          mv CCompare*.AppImage CCompare-ubuntu.AppImage
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ubuntu-packages
+          path: |
+            CCompare-ubuntu.deb
+            CCompare-ubuntu.AppImage

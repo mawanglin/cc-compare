@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=cc compare
+GenericName=Code Compare Tool
+Comment=A free code comparison tool
+Exec=CCompare %F
+Icon=cc-compare
+Categories=Development;Utility;
+Terminal=false
