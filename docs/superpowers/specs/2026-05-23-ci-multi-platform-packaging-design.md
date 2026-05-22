@@ -57,11 +57,12 @@ Qt 版本统一 **5.15.2**。Windows/macOS/Ubuntu 通过 `jurplel/install-qt-act
 打包前必须先修正构建文件。这是本分支上的一个独立 commit，只动构建配置，
 不碰任何 C++ 业务代码。
 
-- **`src/RealCompare.pro`**：删除 `win32{}` 中 `-llibprotobuf` 及 protobuf 相关
-  的 `LIBS` / `INCLUDEPATH`。protobuf 是死依赖——全部源码无任何 `protobuf` /
-  `.pb.h` 引用；且 `libprotobuf.lib` 在仓库中根本不存在。
+- protobuf 是死依赖——全部源码无任何 `protobuf` / `.pb.h` 引用，且 `libprotobuf`
+  库文件在仓库中不存在。经核实，全部 protobuf 配置（`LIBS` 与 `INCLUDEPATH`，含
+  `win32{}` 块）都在 **`src/mac/LINUXRealCompare.pro`** 中；`src/RealCompare.pro`
+  不含 protobuf，无需修改。
 - **`src/mac/LINUXRealCompare.pro`**：
-  - 删除 `-lprotobuf` 及 `/home/yzw/.../protobuf` 的 `INCLUDEPATH`。
+  - 删除全部 `-lprotobuf` / `-llibprotobuf` 的 `LIBS` 及 protobuf 的 `INCLUDEPATH`。
   - 将写死的绝对路径 `-L/home/yzw/build/cccompare/x64/Release` 改为相对路径
     `-Lx64/Release`（Debug 段同理）。
 - **每平台使用的 `.pro`**：
@@ -133,6 +134,5 @@ Qt 版本统一 **5.15.2**。Windows/macOS/Ubuntu 通过 `jurplel/install-qt-act
   （实现计划阶段确定）
 
 修改：
-- `src/RealCompare.pro`（剥离 protobuf）
-- `src/mac/LINUXRealCompare.pro`（剥离 protobuf、修正绝对路径）
+- `src/mac/LINUXRealCompare.pro`（剥离 protobuf、修正绝对路径——全部 protobuf 配置均在此文件）
 - 可能修改：`src/installer/installer.nsi`（视 R3 核对结果）

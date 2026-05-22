@@ -25,9 +25,8 @@
 - `packaging/cc-compare.png` — 256×256 应用图标 PNG，从仓库 `.ico` 转换而来，被 `.deb` 与 AppImage 共用。
 
 **修改：**
-- `src/RealCompare.pro` — 删除 `win32{}` 中 protobuf 相关 `LIBS`/`INCLUDEPATH`。
-- `src/mac/LINUXRealCompare.pro` — 删除 protobuf 相关行；将写死的 `/home/yzw/...` 绝对路径改为相对路径。
-- `src/installer/installer.nsi` — 仅在任务 4 核对发现引用了开发机特定路径时才修改。
+- `src/mac/LINUXRealCompare.pro` — 删除全部 protobuf 相关 `LIBS`/`INCLUDEPATH`；将写死的 `/home/yzw/...` 绝对路径改为相对路径。注：经核实，全部 protobuf 配置（含 `win32{}` 块）都在此文件中；`src/RealCompare.pro` 不含 protobuf，无需修改。
+- `src/installer/installer.nsi` — 仅在任务 3 核对发现引用了开发机特定路径时才修改。
 
 ---
 
@@ -64,9 +63,10 @@ git remote -v
 
 剥离死依赖 protobuf、修正写死的绝对路径。此任务只动构建配置，不碰任何 C++ 业务代码。
 
+> **执行后更正：** 经核实，全部 protobuf 配置（含步骤 2 所述的 `win32{}` 块）都在 `src/mac/LINUXRealCompare.pro` 中，`src/RealCompare.pro` 不含 protobuf。下方步骤 2 的代码块需在 `LINUXRealCompare.pro` 中删除，`src/RealCompare.pro` 实际未修改。
+
 **文件：**
-- 修改：`src/RealCompare.pro`
-- 修改：`src/mac/LINUXRealCompare.pro`
+- 修改：`src/mac/LINUXRealCompare.pro`（全部 protobuf 配置与绝对路径均在此文件）
 
 - [ ] **步骤 1：确认 protobuf 确为死依赖**
 
