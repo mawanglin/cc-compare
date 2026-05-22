@@ -241,7 +241,6 @@ jobs:
           host: linux
           target: desktop
           arch: gcc_64
-          modules: qtscript
 
       - name: Install build deps
         run: |
@@ -375,7 +374,6 @@ cat src/installer/installer.nsi
           host: windows
           target: desktop
           arch: win64_msvc2019_64
-          modules: qtscript
 
       - name: Setup MSVC
         uses: ilammy/msvc-dev-cmd@v1
@@ -463,7 +461,6 @@ git push
           host: mac
           target: desktop
           arch: clang_64
-          modules: qtscript
 
       - name: Install build deps
         run: brew install uchardet
@@ -540,7 +537,7 @@ UOS 无官方公开 Docker 镜像，使用其社区上游 Deepin 的镜像近似
         run: |
           apt-get update
           apt-get install -y build-essential qtbase5-dev qttools5-dev-tools \
-            qtscript5-dev libqt5sql5-sqlite libuchardet-dev \
+            libqt5sql5-sqlite libuchardet-dev \
             wget file dpkg-dev
 
       - name: Build QScintilla static lib
