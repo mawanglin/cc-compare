@@ -141,19 +141,22 @@ Section "CCompare"
 	File ..\x64\Release\vcruntime140_1.dll
 
 	# Qt5 runtime DLLs (deployed by windeployqt in CI)
+	# Concurrent/Network/PrintSupport 不在 windeployqt 输出中（未被
+	# CCompare.exe 实际导入），勿加入；ANGLE EGL/GLESv2 是 Gui 模块依赖。
 	File ..\x64\Release\Qt5Core.dll
 	File ..\x64\Release\Qt5Gui.dll
 	File ..\x64\Release\Qt5Widgets.dll
-	File ..\x64\Release\Qt5Concurrent.dll
 	File ..\x64\Release\Qt5Sql.dll
-	File ..\x64\Release\Qt5Network.dll
-	File ..\x64\Release\Qt5PrintSupport.dll
+	File ..\x64\Release\Qt5Svg.dll
+	File ..\x64\Release\libEGL.dll
+	File ..\x64\Release\libGLESv2.dll
 
 	# Qt plugin subdirs (also from windeployqt)
 	File /r ..\x64\Release\platforms
 	File /r ..\x64\Release\styles
 	File /r ..\x64\Release\imageformats
 	File /r ..\x64\Release\iconengines
+	File /r ..\x64\Release\sqldrivers
 
 	SetRegView 64
 
