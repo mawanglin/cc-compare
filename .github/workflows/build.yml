@@ -224,6 +224,8 @@ jobs:
     runs-on: ubuntu-22.04
     container:
       image: linuxdeepin/deepin:latest
+    env:
+      QT_SELECT: qt5
     steps:
       - uses: actions/checkout@v4
 
@@ -231,7 +233,7 @@ jobs:
         run: |
           apt-get update
           apt-get install -y build-essential qtbase5-dev qtbase5-dev-tools \
-            qttools5-dev-tools libqt5sql5-sqlite libuchardet-dev \
+            qttools5-dev-tools qtchooser libqt5sql5-sqlite libuchardet-dev \
             wget file dpkg-dev fuse libfuse2
 
       - name: Build QScintilla static lib
