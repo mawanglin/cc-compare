@@ -223,7 +223,7 @@ jobs:
   uos:
     runs-on: ubuntu-22.04
     container:
-      image: linuxdeepin/deepin:apricot
+      image: linuxdeepin/deepin:latest
     steps:
       - uses: actions/checkout@v4
 
