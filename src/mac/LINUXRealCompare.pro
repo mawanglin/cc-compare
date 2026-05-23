@@ -9,8 +9,7 @@ QT += core gui widgets concurrent sql network
 
 HEADERS	+= *.h 
 		
-SOURCES	+= *.cpp *.cc  \
-    rcglobal.cpp
+SOURCES	+= *.cpp
 		
 FORMS += *.ui 
 
