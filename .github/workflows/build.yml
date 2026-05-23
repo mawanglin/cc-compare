@@ -37,8 +37,7 @@ jobs:
           cd src/qscint/src
           qmake qscintilla.pro
           make -j$(nproc)
-          mkdir -p ../../x64/Release
-          cp libqmyedit_qt5.a ../../x64/Release/
+          test -f ../../x64/Release/libqmyedit_qt5.a
 
       - name: Build CCompare
         run: |
