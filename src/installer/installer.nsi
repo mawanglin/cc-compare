@@ -140,6 +140,20 @@ Section "CCompare"
 	File ..\x64\Release\vcruntime140.dll
 	File ..\x64\Release\vcruntime140_1.dll
 
+	# Qt5 runtime DLLs (deployed by windeployqt in CI)
+	File ..\x64\Release\Qt5Core.dll
+	File ..\x64\Release\Qt5Gui.dll
+	File ..\x64\Release\Qt5Widgets.dll
+	File ..\x64\Release\Qt5Concurrent.dll
+	File ..\x64\Release\Qt5Sql.dll
+	File ..\x64\Release\Qt5Network.dll
+	File ..\x64\Release\Qt5PrintSupport.dll
+
+	# Qt plugin subdirs (also from windeployqt)
+	File /r ..\x64\Release\platforms
+	File /r ..\x64\Release\styles
+	File /r ..\x64\Release\imageformats
+	File /r ..\x64\Release\iconengines
 
 	SetRegView 64
 

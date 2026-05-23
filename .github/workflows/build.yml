@@ -94,3 +94,80 @@ jobs:
           path: |
             CCompare-ubuntu.deb
             CCompare-ubuntu.AppImage
+
+  windows:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: ${{ env.QT_VERSION }}
+          host: windows
+          target: desktop
+          arch: win64_msvc2019_64
+
+      - name: Setup MSVC dev environment
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Build QScintilla static lib
+        shell: cmd
+        run: |
+          cd src\qscint\src
+          qmake qscintilla.pro
+          nmake
+          if not exist ..\..\x64\Release\qmyedit_qt5.lib exit /b 1
+
+      - name: Build CCompare
+        shell: cmd
+        run: |
+          cd src
+          qmake RealCompare.pro
+          nmake
+          dir x64\Release
+
+      - name: Deploy Qt runtime (windeployqt)
+        shell: cmd
+        run: |
+          cd src\x64\Release
+          windeployqt --release --no-translations --no-system-d3d-compiler --no-opengl-sw CCompare.exe
+          echo --- windeployqt output ---
+          dir
+
+      - name: Copy MSVC runtime DLLs
+        shell: pwsh
+        run: |
+          $dest = "src\x64\Release"
+          $names = @('vcomp140.dll','msvcp140.dll','msvcp140_1.dll','msvcp140_2.dll','vcruntime140.dll','vcruntime140_1.dll')
+          $redist = $env:VCToolsRedistDir
+          if (-not $redist) { throw "VCToolsRedistDir not set; msvc-dev-cmd did not initialize env." }
+          Write-Host "VCToolsRedistDir = $redist"
+          foreach ($n in $names) {
+            $hit = Get-ChildItem -Path $redist -Recurse -Filter $n -ErrorAction SilentlyContinue | Where-Object { $_.FullName -match '\\x64\\' } | Select-Object -First 1
+            if (-not $hit) { throw "Could not find $n under $redist" }
+            Write-Host "Copy $($hit.FullName) -> $dest"
+            Copy-Item $hit.FullName -Destination $dest -Force
+          }
+
+      - name: List Release dir before packaging
+        shell: cmd
+        run: |
+          dir src\x64\Release
+          echo --- subdirs ---
+          for /d %%D in (src\x64\Release\*) do echo DIR %%D
+
+      - name: Build NSIS installer
+        shell: cmd
+        run: |
+          cd src\installer
+          makensis installer.nsi
+          dir CCompare-v*-x64-Installer.exe
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-package
+          path: src/installer/CCompare-v*-x64-Installer.exe
