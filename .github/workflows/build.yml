@@ -85,7 +85,7 @@ jobs:
             --icon-file packaging/cc-compare.png \
             --plugin qt \
             --output appimage
-          mv CCompare*.AppImage CCompare-ubuntu.AppImage
+          mv cc_compare-*.AppImage CCompare-ubuntu.AppImage
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
