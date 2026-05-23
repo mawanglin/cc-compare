@@ -48,8 +48,12 @@ if(CONFIG(Debug, Debug|Release)){
           LIBS += -Lx64/Release -lqmyedit_qt5
           DESTDIR = x64/Release
 
-        QMAKE_CXXFLAGS += -fopenmp -O2
-        LIBS += -lgomp -lpthread
+        # OpenMP via GCC libgomp 仅 Linux 用；macOS 上 clang
+        # 不带 libgomp，跳过即可（#pragma omp 退化为串行，不影响功能）。
+        !macx {
+            QMAKE_CXXFLAGS += -fopenmp -O2
+            LIBS += -lgomp -lpthread
+        }
 }
         LIBS += -luchardet
 }

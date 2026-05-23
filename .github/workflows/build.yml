@@ -172,3 +172,50 @@ jobs:
         with:
           name: windows-package
           path: src/installer/CCompare-v*-x64-Installer.exe
+
+  macos:
+    runs-on: macos-13
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: ${{ env.QT_VERSION }}
+          host: mac
+          target: desktop
+          arch: clang_64
+
+      - name: Install build deps
+        run: brew install uchardet
+
+      - name: Build QScintilla static lib
+        run: |
+          cd src/qscint/src
+          qmake qscintilla.pro
+          make -j$(sysctl -n hw.ncpu)
+          test -f ../../x64/Release/libqmyedit_qt5.a
+
+      - name: Build CCompare
+        run: |
+          cd src
+          cp mac/LINUXRealCompare.pro ./LINUXRealCompare.pro
+          UC=$(brew --prefix uchardet)
+          qmake "INCLUDEPATH+=$UC/include $UC/include/uchardet" \
+                "LIBS+=-L$UC/lib" \
+                LINUXRealCompare.pro
+          make -j$(sysctl -n hw.ncpu)
+          ls -la x64/Release/
+
+      - name: Build .dmg
+        run: |
+          cd src/x64/Release
+          ls -la
+          macdeployqt CCompare.app -dmg
+          mv CCompare.dmg "$GITHUB_WORKSPACE/CCompare-macos.dmg"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-package
+          path: CCompare-macos.dmg
