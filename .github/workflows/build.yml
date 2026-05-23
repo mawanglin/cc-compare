@@ -219,3 +219,79 @@ jobs:
         with:
           name: macos-package
           path: CCompare-macos.dmg
+
+  uos:
+    runs-on: ubuntu-22.04
+    container:
+      image: linuxdeepin/deepin:apricot
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build deps
+        run: |
+          apt-get update
+          apt-get install -y build-essential qtbase5-dev qtbase5-dev-tools \
+            qttools5-dev-tools libqt5sql5-sqlite libuchardet-dev \
+            wget file dpkg-dev fuse libfuse2
+
+      - name: Build QScintilla static lib
+        run: |
+          cd src/qscint/src
+          qmake qscintilla.pro
+          make -j$(nproc)
+          test -f ../../x64/Release/libqmyedit_qt5.a
+
+      - name: Build CCompare
+        run: |
+          cd src
+          cp mac/LINUXRealCompare.pro ./LINUXRealCompare.pro
+          qmake LINUXRealCompare.pro
+          make -j$(nproc)
+          ls -la x64/Release/
+
+      - name: Stage app tree
+        run: |
+          STAGE="$GITHUB_WORKSPACE/stage"
+          mkdir -p "$STAGE/usr/bin" \
+                   "$STAGE/usr/share/applications" \
+                   "$STAGE/usr/share/icons/hicolor/256x256/apps" \
+                   "$STAGE/DEBIAN"
+          cp src/x64/Release/CCompare "$STAGE/usr/bin/"
+          cp packaging/cc-compare.desktop "$STAGE/usr/share/applications/"
+          cp packaging/cc-compare.png \
+             "$STAGE/usr/share/icons/hicolor/256x256/apps/cc-compare.png"
+          cat > "$STAGE/DEBIAN/control" <<EOF
+          Package: cc-compare
+          Version: ${{ env.APP_VERSION }}
+          Section: devel
+          Priority: optional
+          Architecture: amd64
+          Maintainer: cc-compare CI <ci@example.com>
+          Description: A free code comparison tool (UOS build)
+          EOF
+
+      - name: Build .deb
+        run: dpkg-deb --build "$GITHUB_WORKSPACE/stage" "CCompare-uos.deb"
+
+      - name: Build AppImage
+        run: |
+          wget -q https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+          wget -q https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage
+          chmod +x linuxdeploy*.AppImage
+          export APPIMAGE_EXTRACT_AND_RUN=1
+          ./linuxdeploy-x86_64.AppImage \
+            --appdir AppDir \
+            --executable src/x64/Release/CCompare \
+            --desktop-file packaging/cc-compare.desktop \
+            --icon-file packaging/cc-compare.png \
+            --plugin qt \
+            --output appimage
+          mv cc_compare-*.AppImage CCompare-uos.AppImage
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: uos-packages
+          path: |
+            CCompare-uos.deb
+            CCompare-uos.AppImage
