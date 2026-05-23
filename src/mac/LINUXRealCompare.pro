@@ -51,6 +51,7 @@ if(CONFIG(Debug, Debug|Release)){
         QMAKE_CXXFLAGS += -fopenmp -O2
         LIBS += -lgomp -lpthread
 }
+        LIBS += -luchardet
 }
 
 RC_FILE += RealCompare.rc
