@@ -116,24 +116,25 @@ jobs:
       - name: Build QScintilla static lib
         shell: cmd
         run: |
-          cd src\qscint\src
-          qmake qscintilla.pro
-          nmake
+          cd src\qscint\src || exit /b 1
+          qmake qscintilla.pro || exit /b 1
+          nmake || exit /b 1
           if not exist ..\..\x64\Release\qmyedit_qt5.lib exit /b 1
 
       - name: Build CCompare
         shell: cmd
         run: |
-          cd src
-          qmake RealCompare.pro
-          nmake
+          cd src || exit /b 1
+          qmake RealCompare.pro || exit /b 1
+          nmake || exit /b 1
+          if not exist x64\Release\CCompare.exe exit /b 1
           dir x64\Release
 
       - name: Deploy Qt runtime (windeployqt)
         shell: cmd
         run: |
-          cd src\x64\Release
-          windeployqt --release --no-translations --no-system-d3d-compiler --no-opengl-sw CCompare.exe
+          cd src\x64\Release || exit /b 1
+          windeployqt --release --no-translations --no-system-d3d-compiler --no-opengl-sw CCompare.exe || exit /b 1
           echo --- windeployqt output ---
           dir
 
@@ -162,8 +163,8 @@ jobs:
       - name: Build NSIS installer
         shell: cmd
         run: |
-          cd src\installer
-          makensis installer.nsi
+          cd src\installer || exit /b 1
+          makensis installer.nsi || exit /b 1
           dir CCompare-v*-x64-Installer.exe
 
       - name: Upload artifacts

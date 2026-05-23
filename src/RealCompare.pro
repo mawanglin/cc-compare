@@ -11,7 +11,7 @@ QT += core gui widgets concurrent sql network
 
 HEADERS	+= *.h 
 		
-SOURCES	+= *.cpp *.cc 
+SOURCES	+= *.cpp
 		
 FORMS += *.ui 
 
